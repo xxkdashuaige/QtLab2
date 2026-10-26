@@ -29,6 +29,7 @@
 #include <QTextBlockFormat>
 #include <QTextOption>
 #include <QKeySequence>
+#include <QMimeData>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -294,13 +295,24 @@ void MainWindow::updateWindowTitle()
     saveAct->setEnabled(editor->document()->isModified() || currentFile.isEmpty());
 }
 
+
 void MainWindow::updateActions()
 {
+    // 根据是否选中文字，更新剪切和复制按钮
+    const bool hasSelection = editor->textCursor().hasSelection();
+    cutAct->setEnabled(hasSelection);
+    copyAct->setEnabled(hasSelection);
+
+    // 根据剪贴板是否包含文本，更新粘贴按钮
+    pasteAct->setEnabled(
+        QApplication::clipboard()->mimeData()->hasText()
+        );
+
+    // 更新撤销和重做按钮
     undoAct->setEnabled(editor->document()->isUndoAvailable());
     redoAct->setEnabled(editor->document()->isRedoAvailable());
-    cutAct->setEnabled(false); copyAct->setEnabled(false);
-    pasteAct->setEnabled(!QApplication::clipboard()->text().isEmpty());
 }
+
 
 void MainWindow::showFindDialog()
 {
