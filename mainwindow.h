@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTextEdit>
+#include "codeeditor.h"
 #include <QPointer>
 
 class QAction;
@@ -51,7 +51,7 @@ private:
     void createReplaceDialog();
     void showNotFoundMessage(const QString &text);
 
-    QTextEdit *editor = nullptr;
+    CodeEditor *editor = nullptr;
     QString currentFile;
     QString lastSearchText;
     QDialog *findDialog = nullptr;

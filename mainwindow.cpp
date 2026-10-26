@@ -33,10 +33,11 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    editor = new QTextEdit(this);
-    editor->setAcceptRichText(false);
-    editor->setPlaceholderText(QStringLiteral("在此输入文本……"));
-    editor->setFont(QFont(QStringLiteral("Microsoft YaHei"), 11));
+    editor = new CodeEditor(this);
+    editor->setPlaceholderText(
+        QStringLiteral("在此输入文本……"));
+    editor->setFont(
+        QFont(QStringLiteral("Microsoft YaHei"), 11));
     setCentralWidget(editor);
     resize(950, 650);
 
@@ -49,15 +50,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     statusBar()->addPermanentWidget(statusLabel);
     connect(editor->document(), &QTextDocument::modificationChanged,
             this, &MainWindow::updateWindowTitle);
-    connect(editor, &QTextEdit::copyAvailable, this, [this](bool available) {
+    connect(editor, &QPlainTextEdit::copyAvailable, this, [this](bool available) {
         cutAct->setEnabled(available);
         copyAct->setEnabled(available);
     });
-    connect(editor, &QTextEdit::undoAvailable, undoAct, &QAction::setEnabled);
-    connect(editor, &QTextEdit::redoAvailable, redoAct, &QAction::setEnabled);
-    connect(editor, &QTextEdit::textChanged, this, &MainWindow::updateStatus);
-    connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateStatus);
-    connect(editor, &QTextEdit::selectionChanged, this, [this]() {
+    connect(editor, &QPlainTextEdit::undoAvailable, undoAct, &QAction::setEnabled);
+    connect(editor, &QPlainTextEdit::redoAvailable, redoAct, &QAction::setEnabled);
+    connect(editor, &QPlainTextEdit::textChanged, this, &MainWindow::updateStatus);
+    connect(editor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::updateStatus);
+    connect(editor, &QPlainTextEdit::selectionChanged, this, [this]() {
         const bool selected = editor->textCursor().hasSelection();
         cutAct->setEnabled(selected);
         copyAct->setEnabled(selected);
@@ -375,11 +376,23 @@ void MainWindow::chooseFont()
     if (ok) editor->setFont(font);
 }
 
+
 void MainWindow::chooseTextColor()
 {
-    const QColor color = QColorDialog::getColor(editor->textColor(), this, QStringLiteral("选择字体颜色"));
-    if (color.isValid()) editor->setTextColor(color);
+    QColor currentColor =
+        editor->palette().color(QPalette::Text);
+
+    QColor color = QColorDialog::getColor(
+        currentColor, this,
+        QStringLiteral("选择字体颜色"));
+
+    if (color.isValid()) {
+        QPalette palette = editor->palette();
+        palette.setColor(QPalette::Text, color);
+        editor->setPalette(palette);
+    }
 }
+
 
 void MainWindow::chooseBackgroundColor()
 {
@@ -391,7 +404,7 @@ void MainWindow::chooseBackgroundColor()
 
 void MainWindow::toggleWordWrap(bool enabled)
 {
-    editor->setLineWrapMode(enabled ? QTextEdit::WidgetWidth : QTextEdit::NoWrap);
+    editor->setLineWrapMode(enabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
 }
 
 void MainWindow::updateStatus()
